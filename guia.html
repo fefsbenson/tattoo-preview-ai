@@ -1,0 +1,523 @@
+<style>
+  :root {
+    /* Blackwork palette — ink on stencil paper */
+    --paper: #f5f2ec;
+    --skin: #ebe4d7;
+    --ink: #0a0a0a;
+    --ink-soft: #2b2724;
+    --line: #1c1a17;
+    --hair: #c9bfad;
+    --muted: #6b6155;
+    --accent: #b0181c;      /* single red — stencil ink, used with restraint */
+    --accent-soft: #d94a3f;
+    --code-bg: #131110;
+    --code-fg: #ede6da;
+    --code-dim: #8a8172;
+
+    --maxw: 760px;
+    --step: clamp(1rem, 0.8rem + 1vw, 1.25rem);
+
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0c0b0a;
+      --skin: #16140f;
+      --ink: #f1ece1;
+      --ink-soft: #d8d0c2;
+      --line: #efe9dd;
+      --hair: #322d24;
+      --muted: #938a79;
+      --accent: #e0453a;
+      --accent-soft: #f06a5c;
+      --code-bg: #080707;
+      --code-fg: #ede6da;
+      --code-dim: #7c7364;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f5f2ec; --skin: #ebe4d7; --ink: #0a0a0a; --ink-soft: #2b2724;
+    --line: #1c1a17; --hair: #c9bfad; --muted: #6b6155; --accent: #b0181c;
+    --accent-soft: #d94a3f; --code-bg: #131110; --code-fg: #ede6da; --code-dim: #8a8172;
+  }
+  :root[data-theme="dark"] {
+    --paper: #0c0b0a; --skin: #16140f; --ink: #f1ece1; --ink-soft: #d8d0c2;
+    --line: #efe9dd; --hair: #322d24; --muted: #938a79; --accent: #e0453a;
+    --accent-soft: #f06a5c; --code-bg: #080707; --code-fg: #ede6da; --code-dim: #7c7364;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* subtle stipple texture behind everything (dotwork nod) */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: radial-gradient(var(--hair) 0.5px, transparent 0.5px);
+    background-size: 7px 7px;
+    opacity: 0.28;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 3rem) clamp(1.1rem, 5vw, 2.25rem) 5rem;
+  }
+
+  /* ---- theme toggle ---- */
+  .toggle {
+    position: fixed;
+    top: 1rem; right: 1rem;
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5ch;
+    background: var(--skin);
+    color: var(--ink);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .toggle:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- masthead: studio flash-sheet header ---- */
+  .mast {
+    border: 2.5px solid var(--line);
+    padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1.25rem, 4vw, 2rem);
+    text-align: center;
+    position: relative;
+    background: var(--skin);
+    animation: rise 0.7s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .mast::before, .mast::after {
+    content: "";
+    position: absolute;
+    left: 8px; right: 8px;
+    height: 0;
+    border-top: 1px solid var(--line);
+  }
+  .mast::before { top: 5px; }
+  .mast::after { bottom: 5px; }
+
+  .mast .est {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 1.1rem;
+    padding-left: 0.4em;
+  }
+  .mast h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.3rem, 8vw, 4rem);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .mast h1 .amp {
+    display: block;
+    font-size: 0.42em;
+    letter-spacing: 0.3em;
+    font-weight: 400;
+    margin-top: 0.6rem;
+    color: var(--muted);
+  }
+  .mast .tag {
+    margin: 1.4rem auto 0;
+    max-width: 46ch;
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+    text-wrap: pretty;
+  }
+  .mast .rule {
+    width: 46px; height: 2.5px;
+    background: var(--accent);
+    margin: 1.3rem auto 0;
+  }
+
+  /* ---- section ---- */
+  .sec {
+    margin-top: clamp(2.5rem, 7vw, 4rem);
+    animation: rise 0.7s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 0.6rem;
+    margin-bottom: 1.4rem;
+  }
+  .sec-num {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    padding: 0.15em 0.5em;
+    border: 1.5px solid var(--accent);
+    line-height: 1;
+    flex: none;
+    align-self: center;
+  }
+  .sec-head h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 4.5vw, 1.95rem);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sec > p { margin: 0 0 1.1rem; max-width: 66ch; color: var(--ink-soft); }
+  .sec strong { color: var(--ink); font-weight: 700; }
+
+  /* modes: the two things the app does */
+  .modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 0.5rem 0 0;
+  }
+  @media (max-width: 560px) { .modes { grid-template-columns: 1fr; } }
+  .mode {
+    border: 1.5px solid var(--line);
+    padding: 1.1rem 1.15rem;
+    background: var(--skin);
+  }
+  .mode h3 {
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0 0 0.4rem;
+  }
+  .mode p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+
+  /* code / terminal block — the stencil */
+  .cmd {
+    position: relative;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border: 1.5px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    line-height: 1.7;
+    margin: 1.1rem 0;
+    overflow-x: auto;
+  }
+  .cmd-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.55ch;
+    padding: 0.5rem 0.85rem;
+    border-bottom: 1px solid #2a2622;
+    color: var(--code-dim);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .cmd-bar .dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--code-dim); flex: none; }
+  .cmd-bar .dot.red { background: var(--accent); border-color: var(--accent); }
+  .cmd pre {
+    margin: 0;
+    padding: 0.95rem 1.05rem;
+    white-space: pre;
+  }
+  .cmd .p { color: var(--accent-soft); user-select: none; }
+  .cmd .c { color: var(--code-dim); }
+
+  /* callout */
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--skin);
+    padding: 0.85rem 1.1rem;
+    margin: 1.2rem 0;
+    font-size: 0.93rem;
+    color: var(--ink-soft);
+  }
+  .note b { color: var(--ink); }
+
+  /* agent table */
+  .tbl-scroll { overflow-x: auto; margin: 1rem 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 480px;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.7rem 0.8rem;
+    border-bottom: 1px solid var(--hair);
+    vertical-align: top;
+  }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--line);
+  }
+  td .ag {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  td .persona { color: var(--muted); font-style: italic; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ideas list */
+  .ideas { list-style: none; padding: 0; margin: 0.5rem 0 0; display: grid; gap: 0.55rem; }
+  .ideas li {
+    display: flex; gap: 0.8ch;
+    padding-left: 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .ideas li::before {
+    content: "▲";
+    color: var(--accent);
+    font-size: 0.7em;
+    line-height: 1.9;
+    flex: none;
+  }
+
+  code.inl {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--skin);
+    border: 1px solid var(--hair);
+    padding: 0.05em 0.4em;
+    border-radius: 3px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+  a:hover { color: var(--accent-soft); }
+  a:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+
+  /* footer / colophon */
+  .colophon {
+    margin-top: clamp(3rem, 8vw, 5rem);
+    border-top: 2.5px solid var(--line);
+    padding-top: 1.4rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .colophon .mark { color: var(--accent); }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  .sec:nth-of-type(1) { animation-delay: 0.05s; }
+  .sec:nth-of-type(2) { animation-delay: 0.1s; }
+  .sec:nth-of-type(3) { animation-delay: 0.12s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<button class="toggle" id="tog" aria-label="Alternar tema claro/escuro">
+  <span id="tog-ic">◐</span> <span id="tog-tx">tema</span>
+</button>
+
+<div class="wrap">
+
+  <header class="mast">
+    <p class="est">Synkra · AIOX Studio · Est. Localhost</p>
+    <h1>Blackwork<br>Tattoo AI<span class="amp">Guia de Execução</span></h1>
+    <p class="tag">Um web app que gera tatuagens blackwork com IA — e deixa o cliente <em>se ver tatuado</em> antes de fechar o serviço. Clone, rode e continue a execução com os agentes do AIOX.</p>
+    <div class="rule"></div>
+  </header>
+
+  <!-- What it is -->
+  <section class="sec">
+    <div class="sec-head">
+      <span class="sec-num">00</span>
+      <h2>O Que É</h2>
+    </div>
+    <p>App single-page em <strong>Next.js 14</strong> + <strong>TypeScript</strong> + <strong>Tailwind</strong> que gera arte de tatuagem <strong>blackwork</strong> (100% tinta preta, sem cor) via <strong>OpenAI <code class="inl">gpt-image-1</code></strong>. Roda em <code class="inl">localhost:3000</code>. Dois modos:</p>
+    <div class="modes">
+      <div class="mode">
+        <h3>Gerar do Zero</h3>
+        <p>Descreva a tatuagem em texto e receba um design flash-sheet pronto em preto sólido.</p>
+      </div>
+      <div class="mode">
+        <h3>Ver-se Tatuado</h3>
+        <p>Envie uma foto sua — a IA compõe a tatuagem na sua pele, seguindo o contorno do corpo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Run the app -->
+  <section class="sec">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h2>Rodar o App</h2>
+    </div>
+    <p>Precisa de <strong>Node.js 18+</strong>, <strong>npm</strong> e uma <strong>chave da OpenAI</strong> com créditos e acesso ao <code class="inl">gpt-image-1</code>.</p>
+    <div class="cmd">
+      <div class="cmd-bar"><span class="dot red"></span><span class="dot"></span><span class="dot"></span> terminal — setup</div>
+      <pre><span class="c"># 1. Clone o repositório</span>
+<span class="p">$</span> git clone https://github.com/fefsbenson/tattoo-preview-ai.git
+<span class="p">$</span> cd tattoo-preview-ai
+
+<span class="c"># 2. Instale as dependências</span>
+<span class="p">$</span> npm install
+
+<span class="c"># 3. Configure sua chave da OpenAI</span>
+<span class="p">$</span> cp .env.local.example .env.local
+<span class="c">#    edite .env.local → OPENAI_API_KEY=sua-chave-aqui</span>
+
+<span class="c"># 4. Suba o servidor</span>
+<span class="p">$</span> npm run dev</pre>
+    </div>
+    <p>Abra <a href="http://localhost:3000">localhost:3000</a>. Obtenha a chave em <a href="https://platform.openai.com/api-keys">platform.openai.com/api-keys</a>.</p>
+    <div class="note"><b>Reinicie após editar a chave.</b> O Next.js só carrega o <code class="inl">.env.local</code> na inicialização — rode <code class="inl">npm run dev</code> de novo após preencher a chave.</div>
+  </section>
+
+  <!-- Continue in AIOX -->
+  <section class="sec">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h2>Continuar no AIOX</h2>
+    </div>
+    <p>Este MVP nasceu de uma orquestração de agentes do <strong>AIOX open source</strong>. Com o AIOX instalado, você clona o projeto pro seu workspace e continua evoluindo com os mesmos agentes que o criaram — sem começar do zero.</p>
+    <div class="cmd">
+      <div class="cmd-bar"><span class="dot red"></span><span class="dot"></span><span class="dot"></span> terminal — workspace aiox</div>
+      <pre><span class="c"># Instale o AIOX open source (se ainda não tiver)</span>
+<span class="p">$</span> npx aiox-init
+
+<span class="c"># Traga o MVP pro seu workspace</span>
+<span class="p">$</span> git clone https://github.com/fefsbenson/tattoo-preview-ai.git
+<span class="p">$</span> cd tattoo-preview-ai && npm install
+<span class="p">$</span> cp .env.local.example .env.local   <span class="c"># preencha OPENAI_API_KEY</span></pre>
+    </div>
+    <p>Abra o projeto no Claude Code e chame os agentes para retomar a execução:</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr><th>Objetivo</th><th>Agente</th><th>Como pedir</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nova feature</td>
+            <td><span class="ag">@dev</span> <span class="persona">Dex</span></td>
+            <td>“adicione um seletor de estilo: fine-line, dotwork, tribal”</td>
+          </tr>
+          <tr>
+            <td>Testar em runtime</td>
+            <td><span class="ag">@qa</span> <span class="persona">Quinn</span></td>
+            <td>“valide os dois fluxos em localhost e reporte PASS/FAIL”</td>
+          </tr>
+          <tr>
+            <td>Arquitetura</td>
+            <td><span class="ag">@architect</span> <span class="persona">Aria</span></td>
+            <td>“projete persistência de histórico de designs por sessão”</td>
+          </tr>
+          <tr>
+            <td>GitHub / deploy</td>
+            <td><span class="ag">@devops</span> <span class="persona">Gage</span></td>
+            <td>“crie um PR e configure deploy na Vercel”</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><b>Fluxo completo (Story Development Cycle):</b> <code class="inl">@sm *draft</code> → <code class="inl">@po *validate</code> → <code class="inl">@dev *develop-story</code> → <code class="inl">@qa *qa-gate</code> → <code class="inl">@devops *push</code>. Para algo rápido, chame <code class="inl">@dev</code> direto no modo autônomo.</div>
+
+    <p style="margin-top:1.6rem;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.03em;font-size:1.05rem;">Próximas execuções sugeridas</p>
+    <ul class="ideas">
+      <li>Seletor de sub-estilos blackwork — dotwork, ornamental, geométrico, tribal</li>
+      <li>Histórico de designs por sessão (o AIOX pluga Supabase)</li>
+      <li>Presets de tamanho e região do corpo</li>
+      <li>Galeria de exemplos e botão “regenerar variação”</li>
+      <li>Toggle de qualidade (<code class="inl">low</code>/<code class="inl">medium</code>/<code class="inl">high</code>) para controlar custo por imagem</li>
+      <li>Deploy público na Vercel para o cliente acessar de fora</li>
+    </ul>
+  </section>
+
+  <!-- Notes / safety -->
+  <section class="sec">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h2>Regras da Casa</h2>
+    </div>
+    <ul class="ideas">
+      <li><strong>Nunca commite <code class="inl">.env.local</code>.</strong> A chave só é lida server-side em <code class="inl">api/generate/route.ts</code> — jamais chega ao navegador.</li>
+      <li><strong>Custo real:</strong> cada geração consome créditos da OpenAI (~US$ 0,04–0,07/imagem em <code class="inl">medium</code>). Ajuste <code class="inl">quality</code> em <code class="inl">lib/openai.ts</code>.</li>
+      <li><strong>Sem login, sem persistência</strong> — as imagens não são armazenadas no servidor.</li>
+      <li>A tatuagem em foto é uma <strong>prévia aproximada</strong> — não é o resultado final na pele.</li>
+    </ul>
+  </section>
+
+  <footer class="colophon">
+    <span>Blackwork Tattoo AI · MVP</span>
+    <span>Construído com <span class="mark">AIOX</span> 🖤</span>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('tog');
+    var ic = document.getElementById('tog-ic');
+    var tx = document.getElementById('tog-tx');
+    function current() {
+      var attr = root.getAttribute('data-theme');
+      if (attr) return attr;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function paint() {
+      var dark = current() === 'dark';
+      ic.textContent = dark ? '○' : '●';
+      tx.textContent = dark ? 'claro' : 'escuro';
+    }
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      paint();
+    });
+    paint();
+  })();
+</script>

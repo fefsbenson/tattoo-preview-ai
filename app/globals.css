@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Subtle grain / vignette to give the blackwork studio feel. */
+body {
+  background-image: radial-gradient(
+    circle at 50% 0%,
+    rgba(255, 255, 255, 0.04),
+    rgba(0, 0, 0, 0) 55%
+  );
+  min-height: 100vh;
+}
+
+::selection {
+  background: #f5f5f5;
+  color: #0a0a0a;
+}
+
+/* Spinner used across forms. */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.tattoo-spinner {
+  animation: spin 0.8s linear infinite;
+}
